@@ -27,38 +27,24 @@ struct block {
     int in_use;   // Boolean
 };
 
-void find_space(int bytes) 
-{
-	bytes = bytes + GET_PAD(bytes);
-	while(n != NULL){
-		if(n -> size >= bytes && n -> in_use == 0){
-			split_space(n, bytes);
-			n->in_use = 1;
-			return PTR_OFFSET(n, PADDED_SIZE(sizeof(struct block)));
-		}
-		n = n -> next;
-	}
-	return NULL;
-}
-
 // Split_Space(current_node, requested_size):
     // If current_node big enough to split:
         // Add a new struct block with the remaining unused space
         // Wire it into the linked list
 
-int required_space = PADDED_SIZE(bytes) + PADDED_SIZE(sizeof(struct block)) + 16;
 
 void split_space(struct block *n, int bytes)
 {
-		struct block *new_node = PTR_OFFSET(n, PADDED_SIZE(bytes) + PADDED_SIZE(sizeof(struct block))); // create new node
-		new_node -> in_use = 0; // declare not in use
-		new_node -> size = n->size - (PADDED_SIZE(bytes) + (PADDED_SIZE(sizeof(struct block)))); // declares start of new block
-		new_node -> next = NULL; // set value of next to NULL
-		n -> next = new_node; // make the next node new
-		n -> size = PADDED_SIZE(bytes); // sets up next
-	}
-	void *myalloc(int size)
-	{
+	struct block *new_node = PTR_OFFSET(n, PADDED_SIZE(bytes) + PADDED_SIZE(sizeof(struct block))); // create new node
+	new_node -> in_use = 0; // declare not in use
+	new_node -> size = n->size - (PADDED_SIZE(bytes) + (PADDED_SIZE(sizeof(struct block)))); // declares start of new block
+	new_node -> next = NULL; // set value of next to NULL
+	n -> next = new_node; // make the next node new
+	n -> size = PADDED_SIZE(bytes); // sets up next
+}
+
+void *myalloc(int bytes)
+{
 		void *h = sbrk(1024);
 
 		size_t padded_block_size = PADDED_SIZE(sizeof(struct block));
@@ -70,11 +56,13 @@ void split_space(struct block *n, int bytes)
 			head -> in_use = 0;
 		}
 		struct block *n = head;
+		int required_space = PADDED_SIZE(bytes) + PADDED_SIZE(sizeof(struct block)) + 16;
 
+		//find_space(size);
 		while(n != NULL){
-			if(n -> size >= size && n -> in_use == 0){
+			if(n -> size >= bytes && n -> in_use == 0){
 				if (n -> size >= required_space){
-					split_space(n, space);
+					split_space(n, bytes);
 				}
 				n->in_use = 1;
 				return PTR_OFFSET(n, PADDED_SIZE(sizeof(struct block)));
@@ -82,18 +70,32 @@ void split_space(struct block *n, int bytes)
 			n = n -> next;
 		}
 		return NULL;
-	}
+}
 
-	void my_free(void *p) 
-	{
+// void find_space(int bytes) 
+// {
+// 	bytes = bytes + GET_PAD(bytes);
+// 	while(n != NULL){
+// 		if(n -> size >= bytes && n -> in_use == 0){
+// 			split_space(n, bytes);
+// 			n->in_use = 1;
+// 			return PTR_OFFSET(n, PADDED_SIZE(sizeof(struct block)));
+// 		}
+// 		n = n -> next;
+// 	}
+// 	return NULL;
+// }
+
+void my_free(void *p) 
+{
 		struct block *h = head;
 		if ((int)p == (int)(h - (GET_PAD(sizeof(struct block))) + 1)){
 			h -> in_use = 0;
 		} h = h -> next;	
-	}
+}
 
-	void print_data(void)
-	{
+void print_data(void)
+{
 		struct block *b = head;
 
 		if (b == NULL) {
@@ -113,7 +115,7 @@ void split_space(struct block *n, int bytes)
 		}
 
 		printf("\n");
-	}
+}
 
 	int main(void) {
 	// void *p;
