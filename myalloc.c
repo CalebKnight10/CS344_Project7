@@ -37,7 +37,7 @@ void split_space(struct block *n, int bytes)
 {
 	struct block *new_node = PTR_OFFSET(n, PADDED_SIZE(bytes) + PADDED_SIZE(sizeof(struct block))); // create new node
 	new_node -> in_use = 0; // declare not in use
-	new_node -> size = n->size - (PADDED_SIZE(bytes) + (PADDED_SIZE(sizeof(struct block)))); // declares start of new block
+	new_node -> size = n -> size - (PADDED_SIZE(bytes) + (PADDED_SIZE(sizeof(struct block)))); // declares start of new block
 	new_node -> next = NULL; // set value of next to NULL
 	n -> next = new_node; // make the next node new
 	n -> size = PADDED_SIZE(bytes); // sets up next
@@ -45,31 +45,31 @@ void split_space(struct block *n, int bytes)
 
 void *myalloc(int bytes)
 {
-		void *h = sbrk(1024);
+	void *h = sbrk(1024);
 
-		size_t padded_block_size = PADDED_SIZE(sizeof(struct block));
+	size_t padded_block_size = PADDED_SIZE(sizeof(struct block));
 
-		if(head == NULL) {
-			head = h;
-			head -> next = NULL;
-			head -> size = 1024 - padded_block_size;
-			head -> in_use = 0;
-		}
-		struct block *n = head;
-		int required_space = PADDED_SIZE(bytes) + PADDED_SIZE(sizeof(struct block)) + 16;
+	if(head == NULL) {
+		head = h;
+		head -> next = NULL;
+		head -> size = 1024 - padded_block_size;
+		head -> in_use = 0;
+	}
+	struct block *n = head;
+	int required_space = PADDED_SIZE(bytes) + PADDED_SIZE(sizeof(struct block)) + 16;
 
 		//find_space(size);
-		while(n != NULL){
-			if(n -> size >= bytes && n -> in_use == 0){
-				if (n -> size >= required_space){
-					split_space(n, bytes);
-				}
-				n->in_use = 1;
-				return PTR_OFFSET(n, PADDED_SIZE(sizeof(struct block)));
+	while(n != NULL){
+		if(n -> size >= bytes && n -> in_use == 0){
+			if (n -> size >= required_space){
+				split_space(n, bytes);
 			}
-			n = n -> next;
+			n -> in_use = 1;
+			return PTR_OFFSET(n, PADDED_SIZE(sizeof(struct block)));
 		}
-		return NULL;
+		n = n -> next;
+	}
+	return NULL;
 }
 
 // void find_space(int bytes) 
@@ -86,49 +86,72 @@ void *myalloc(int bytes)
 // 	return NULL;
 // }
 
-void my_free(void *p) 
+void myfree(void *p) 
 {
-		struct block *h = head;
-		if ((int)p == (int)(h - (GET_PAD(sizeof(struct block))) + 1)){
-			h -> in_use = 0;
-		} h = h -> next;	
+	struct block *h = head;
+	if ((int)p == (int)(h - (GET_PAD(sizeof(struct block))) + 1)){
+		h -> in_use = 0;
+	} h = h -> next;	
 }
 
 void print_data(void)
 {
-		struct block *b = head;
+	struct block *b = head;
 
-		if (b == NULL) {
-			printf("[empty]\n");
-			return;
-		}
+	if (b == NULL) {
+		printf("[empty]\n");
+		return;
+	}
 
-		while (b != NULL) {
+	while (b != NULL) {
         // Uncomment the following line if you want to see the pointer values
         // printf("[%p:%d,%s]", b, b->size, b->in_use? "used": "free");
-			printf("[%d,%s]", b->size, b->in_use? "used": "free");
-			if (b -> next != NULL) {
-				printf(" -> ");
-			}
-
-			b = b -> next;
+		printf("[%d,%s]", b->size, b->in_use? "used": "free");
+		if (b -> next != NULL) {
+			printf(" -> ");
 		}
 
-		printf("\n");
+		b = b -> next;
+	}
+
+	printf("\n");
 }
 
-	int main(void) {
+int main(void) {
+
+	void *p;
+
+    myalloc(10);     print_data();
+    p = myalloc(20); print_data();
+    myalloc(30);     print_data();
+    myfree(p);       print_data();
+    myalloc(40);     print_data();
+    myalloc(10);     print_data();
+
+ //     void *p;
+
+ //    p = myalloc(512);
+ //    print_data();
+
+ //    myfree(p);
+ //    print_data();
+
+    // myalloc(10); print_data();
+    // myalloc(20); print_data();
+    // myalloc(30); print_data();
+    // myalloc(40); print_data();
+    // myalloc(50); print_data();
 	// void *p;
 
 	// print_data();
 	// p = myalloc(64);
 	// print_data();
 
-		void *p;
+	// void *p;
 
-		print_data();
-		p = myalloc(16);
-		print_data();
-		p = myalloc(16);
-		printf("%p\n", p);
-	}
+	// print_data();
+	// p = myalloc(16);
+	// print_data();
+	// p = myalloc(16);
+	// printf("%p\n", p);
+}
