@@ -53,6 +53,22 @@ void *myalloc(int size)
 	return NULL;
 }
 
+void find_space(int bytes) 
+{
+	bytes = bytes + GET_PAD(bytes);
+	while(n != NULL){
+		if(n -> size >= size && n -> in_use == 0){
+			if (n->size >= needed_space){
+				split_space(n, size);
+			}
+			n->in_use = 1;
+			return PTR_OFFSET(n, PADDED_SIZE(sizeof(struct block)));
+		}
+		n = n -> next;
+	}
+	return NULL;
+}
+
 void print_data(void)
 {
 	struct block *b = head;
