@@ -1,10 +1,11 @@
 // Caleb Knight
 // CS 344
-// Programming Exercise in C to write an allocator 
+// Project 7
+// Programming Exercise in C to write free nodes from allocation using previous
+// project 6 myallocator() 
 
 // gcc -Wall -Wextra -Wno-deprecated-declarations -o myalloc myalloc.c
 // This ^ is what I used to compile in command line
-// Already late so don't want to continue to waste time on makefile
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -29,6 +30,7 @@ struct block {
 void *myalloc(int size)
 {
 	void *h = sbrk(1024);
+
 	size_t padded_block_size = PADDED_SIZE(sizeof(struct block));
 
 	if(head == NULL) {
@@ -38,13 +40,10 @@ void *myalloc(int size)
 		head -> in_use = 0;
 	}
 	struct block *n = head;
-	// int needed_space = PADDED_SIZE(size) + PADDED_SIZE(sizeof(struct block)) + 16;
 
 	while(n != NULL){
 		if(n -> size >= size && n -> in_use == 0){
-			// if (n->size >= needed_space){
-			// 	split_space(n, size);
-			// }
+			split_space(n, size);
 			n->in_use = 1;
 			return PTR_OFFSET(n, PADDED_SIZE(sizeof(struct block)));
 		}
@@ -53,20 +52,39 @@ void *myalloc(int size)
 	return NULL;
 }
 
+int required_space = PADDED_SIZE(bytes) + PADDED_SIZE(sizeof(struct block)) + 16;
+
 void find_space(int bytes) 
 {
 	bytes = bytes + GET_PAD(bytes);
 	while(n != NULL){
-		if(n -> size >= size && n -> in_use == 0){
-			if (n->size >= needed_space){
-				split_space(n, size);
-			}
+		if(n -> size >= bytes && n -> in_use == 0){
+			split_space(n, bytes);
 			n->in_use = 1;
 			return PTR_OFFSET(n, PADDED_SIZE(sizeof(struct block)));
 		}
 		n = n -> next;
 	}
 	return NULL;
+}
+
+
+
+// Split_Space(current_node, requested_size):
+    // If current_node big enough to split:
+        // Add a new struct block with the remaining unused space
+        // Wire it into the linked list
+
+void split_space(struct block *n, int bytes)
+{
+	if (n -> size >= required_space){
+		struct block *new_n = PTR_OFFSET(n, PADDED_SIZE(bytes) + PADDED_SIZE(sizeof(struct block))); // create new node
+		new_n -> in_use = 0; // declare not in use
+		new_n -> size = n->size - (PADDED_SIZE(bytes) + (PADDED_SIZE(sizeof(struct block)))); // declares start of new block
+		new_n -> next = NULL; // set value of next to NULL
+		n -> next = new_n; // make the next node new
+		n -> size = PADDED_SIZE(bytes); // sets up next
+	}
 }
 
 void print_data(void)
