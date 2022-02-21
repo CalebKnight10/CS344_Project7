@@ -72,13 +72,15 @@ void *myalloc(int bytes)
 	return NULL;
 }
 
+
+// Need to implement this, was getting implicit error
 // void find_space(int bytes) 
 // {
 // 	bytes = bytes + GET_PAD(bytes);
 // 	while(n != NULL){
 // 		if(n -> size >= bytes && n -> in_use == 0){
 // 			split_space(n, bytes);
-// 			n->in_use = 1;
+// 			n -> in_use = 1;
 // 			return PTR_OFFSET(n, PADDED_SIZE(sizeof(struct block)));
 // 		}
 // 		n = n -> next;
