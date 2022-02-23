@@ -36,11 +36,11 @@ struct block {
 void split_space(struct block *n, int bytes)
 {
 	struct block *new_node = PTR_OFFSET(n, PADDED_SIZE(bytes) + PADDED_SIZE(sizeof(struct block))); // create new node
-	new_node -> in_use = 0; // declare not in use
 	new_node -> size = n -> size - (PADDED_SIZE(bytes) + (PADDED_SIZE(sizeof(struct block)))); // declares start of new block
-	new_node -> next = NULL; // set value of next to NULL
-	n -> next = new_node; // make the next node new
 	n -> size = PADDED_SIZE(bytes); // sets up next
+	new_node -> in_use = 0; // declare not in use
+	new_node -> next = n -> next; // set value of next to NULL
+	n -> next = new_node; // make the next node new
 }
 
 void *myalloc(int bytes)
@@ -59,13 +59,14 @@ void *myalloc(int bytes)
 	int required_space = PADDED_SIZE(bytes) + PADDED_SIZE(sizeof(struct block)) + 16;
 
 		//find_space(size);
-	while(n != NULL){
+	while(n != NULL) {
 		if(n -> size >= bytes && n -> in_use == 0){
 			if (n -> size >= required_space){
 				split_space(n, bytes);
+
+				n -> in_use = 1;
+				return PTR_OFFSET(n, PADDED_SIZE(sizeof(struct block)));
 			}
-			n -> in_use = 1;
-			return PTR_OFFSET(n, PADDED_SIZE(sizeof(struct block)));
 		}
 		n = n -> next;
 	}
@@ -119,7 +120,8 @@ void print_data(void)
 	printf("\n");
 }
 
-int main(void) {
+int main(void) 
+{
 
 	void *p;
 
